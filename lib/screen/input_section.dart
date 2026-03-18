@@ -14,11 +14,28 @@ class InputScreen extends StatefulWidget {
 }
 
 class _InputSectionState extends State<InputScreen> {
+
+   List<String> countries = [
+    "Malaysia",
+    "Singapore",
+    "Thailand",
+    "Japan",
+    "Korea",
+    "Indonesia",
+    "Vietnam",
+    "China",
+  ];
+  
+
+  @override
+  // ignore: override_on_non_overriding_member
   final TextEditingController durationController = TextEditingController();
   final TextEditingController budgetController = TextEditingController();
   final TextEditingController participantsController = TextEditingController();
   final TextEditingController destinationController = TextEditingController();
   final TextEditingController traveltypeController = TextEditingController();
+
+  
 
 
 final model = FirebaseAI.googleAI().generativeModel(
@@ -91,8 +108,8 @@ final model = FirebaseAI.googleAI().generativeModel(
 double duration = 3;
 double budget = 1000;
 int participants = 1;
-String selectedDestination = "Malaysia";
- String travelType = "Relax";
+String selectedDestination = "";
+ String travelType = "Budget";
  
   
 
@@ -147,27 +164,59 @@ Column(
     ),
   ],
 ),
+
+Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Text("Participants:${participants.toInt()}"),
+    Slider(
+      min: 1,
+      max: 10,
+      divisions: 9,
+       value: participants.toDouble(),
+      label: participants.toString(),
+      onChanged: (value) {
+        setState(() {
+          participants = value.toInt();
+        });
+      },
+    ),
+  ],
+),
+
         
 
-DropdownButtonFormField<String>(
-  initialValue: selectedDestination,
-  items: ["Malaysia", "Japan", "Korea", "Thailand"]
-      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-      .toList(),
-  onChanged: (value) {
-    setState(() {
-      selectedDestination = value!;
-    });
+Autocomplete<String>(
+  optionsBuilder: (TextEditingValue textEditingValue) {
+    if (textEditingValue.text.isEmpty) {
+      return const Iterable<String>.empty();
+    }
+    return [ "Malaysia","Singapore","Thailand","Japan","Korea","Indonesia","Vietnam",
+    "China",]
+        .where((option) => option.toLowerCase().contains(
+              textEditingValue.text.toLowerCase(),
+            ));
   },
-  decoration: InputDecoration(
-    labelText: "Destination",
-    border: OutlineInputBorder(),
-  ),
+  onSelected: (String selection) {
+    selectedDestination = selection;
+  },
+  fieldViewBuilder:
+      (context, controller, focusNode, onEditingComplete) {
+    return TextField(
+      controller: controller,
+      focusNode: focusNode,
+      decoration: InputDecoration(
+        labelText: "Destination",
+        border: OutlineInputBorder(),
+        prefixIcon: Icon(Icons.search),
+      ),
+    );
+  },
 ),
 
 Wrap(
   spacing: 10,
-  children: ["Relax", "Adventure", "Luxury"]
+  children: ["Budget", "Mid-Range", "Luxury"]
       .map((type) => ChoiceChip(
             label: Text(type),
             selected: travelType == type,
